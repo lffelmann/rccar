@@ -37,7 +37,7 @@ class Steering : public rclcpp::Node {
         output_msg.twist_0 = msg->twist;
         output_msg.twist_1 = msg->twist;
 
-        if (latest_imu_) {
+        if (!latest_imu_) {
             output_msg.stamp.sec = 0;
             output_msg.stamp.nanosec = 0;
         } else {
