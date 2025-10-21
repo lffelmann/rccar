@@ -45,6 +45,7 @@ class Steering : public rclcpp::Node {
         }
 
         pub_cmd_vel_imu_->publish(output_msg);
+        RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_imu");
     }
 };
 
