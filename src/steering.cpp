@@ -2,7 +2,7 @@
 #include "rccar_msgs/msg/twist_stamped_twist_timestamp_timestamp.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include "sensor_msgs/msg/odometry.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 using std::placeholders::_1;
 
@@ -13,8 +13,8 @@ class Steering : public rclcpp::Node {
 
         sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(
             "/imu", qos_sensor, std::bind(&Steering::imu_callback, this, _1));
-        
-        sub_odom_ = this->create_subscription<sensor_msgs::msg::Odometry>(
+
+        sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odom", qos_sensor, std::bind(&Steering::odom_callback, this, _1));
 
         sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
@@ -28,15 +28,15 @@ class Steering : public rclcpp::Node {
 
   private:
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu_;
-    rclcpp::Subscription<sensor_msgs::msg::Odometry>::SharedPtr sub_odom_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
     rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr sub_cmd_vel_;
     rclcpp::Publisher<rccar_msgs::msg::TwistStampedTwistTimestampTimestamp>::SharedPtr pub_cmd_vel_imu_;
 
     sensor_msgs::msg::Imu::SharedPtr latest_imu_;
-    sensor_msgs::msg::Odometry::SharedPtr latest_odom_;
+    nav_msgs::msg::Odometry::SharedPtr latest_odom_;
 
     void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg) { latest_imu_ = msg; }
-    void odom_callback(const sensor_msgs::msg::Odometry::SharedPtr msg) { latest_odom_ = msg; }
+    void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) { latest_odom_ = msg; }
 
     void cmd_vel_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
         auto output_msg = rccar_msgs::msg::TwistStampedTwistTimestampTimestamp();
