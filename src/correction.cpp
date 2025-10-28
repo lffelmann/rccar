@@ -90,12 +90,17 @@ class Correction : public rclcpp::Node {
         double delta_t_cmd = 0.1;
         double delta_t_imucmd = delta_t_imu - delta_t_cmd;
 
+        if (delta_t_imucmd < 0) {
+            delta_t_imucmd = 0.0;
+            delta_t_cmd = delta_t_imu;
+        }
+
         double w = latest_imu_->orientation.w;
         double x = latest_imu_->orientation.x;
         double y = latest_imu_->orientation.y;
         double z = latest_imu_->orientation.z;
 
-        double psi_vel_imu = latest_imu_->angular_velocity.z * delta_t_imucmd;
+        double psi_vel_imu = latest_imu_->angular_velocity.z;
         double psi_vel_cmd = last_cmd_vel_->twist.angular.z;
 
         double psi_0 = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
