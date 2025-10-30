@@ -123,7 +123,7 @@ class Correction : public rclcpp::Node {
         double psi = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
         
         for (int i = cmds_used; i>0; i--) {
-            double psi_vel_cmd = cmd_vel_list_.peek_by_index(i)->twist.angular.z;
+            double psi_vel_cmd = (cmd_vel_list_.peek_by_index(i)->twist.linear.x == 0.0) ? 0.0 : cmd_vel_list_.peek_by_index(i)->twist.angular.z;
             psi += psi_vel_cmd * delta_t_calc;
             delta_t_calc = delta_t_cmd;
         }
