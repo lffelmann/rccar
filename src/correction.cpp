@@ -54,7 +54,7 @@ class Correction : public rclcpp::Node {
             "/cmd_vel", 1, std::bind(&Correction::cmd_vel_callback, this, _1));
 
         sub_imu_latency_ = this->create_subscription<sensor_msgs::msg::TimeReference>(
-            "/imu_latency", 1, std::bind(&Correction::imu_latency_callback, this, _1));
+            "/imu_latency", qos_sensor, std::bind(&Correction::imu_latency_callback, this, _1));
 
         pub_cmd_vel_imu_ = this->create_publisher<rccar_msgs::msg::TwistStampedTwistTimestampTimestamp>(
             "/cmd_vel_imu", 1);
