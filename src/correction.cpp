@@ -55,7 +55,6 @@ class Correction : public rclcpp::Node {
         pub_cmd_vel_imu_ = this->create_publisher<rccar_msgs::msg::TwistStampedTwistTimestampTimestamp>(
             "/cmd_vel_imu", 1);
 
-        RCLCPP_INFO(this->get_logger(), "Correction node started with alpha = %.3f", alpha_);
         RCLCPP_INFO(this->get_logger(), "Correction node has been started.");
     }
 
@@ -83,8 +82,6 @@ class Correction : public rclcpp::Node {
         auto output_msg = rccar_msgs::msg::TwistStampedTwistTimestampTimestamp();
         output_msg.header = msg->header;
         output_msg.twist_0 = msg->twist;
-
-        double alpha = alpha_;
 
         if (!latest_imu_) {
             output_msg.stamp_0.sec = 0;
