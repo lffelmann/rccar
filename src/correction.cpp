@@ -31,6 +31,10 @@ public:
     bool is_full() const {
         return dq.size() >= MAX_SIZE;
     }
+
+    size_t size() const {
+        return dq.size();
+    }
 };
 
 using std::placeholders::_1;
@@ -95,6 +99,18 @@ class Correction : public rclcpp::Node {
             output_msg.stamp_1.nanosec = 0;
         } else {
             output_msg.stamp_1 = latest_odom_->header.stamp;
+        }
+
+        if (!latest_imu_latency_) {
+            RCLCPP_INFO(this->get_logger(), "No latest imu latency");
+        }
+
+        if (!latest_imu_) {
+            RCLCPP_INFO(this->get_logger(), "No latest imu");
+        }
+
+        if (!cmd_vel_list_.is_full()) {
+            RCLCPP_INFO(this->get_logger(), "cmd_vel_list_ not full yet Size: %zu", cmd_vel_list_.size());
         }
 
         if (!latest_imu_latency_ || !latest_imu_ || !cmd_vel_list_.is_full()) {
