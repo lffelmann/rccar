@@ -82,6 +82,8 @@ class Correction : public rclcpp::Node {
         return msg->time_ref.sec + msg->time_ref.nanosec * 1e-9;
     }
 
+    double initial_psi = 999.9;
+
     void cmd_vel_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
         auto output_msg = rccar_msgs::msg::TwistStampedTwistTimestampTimestamp();
         output_msg.header = msg->header;
@@ -125,10 +127,10 @@ class Correction : public rclcpp::Node {
 
         sensor_msgs::msg::Imu::SharedPtr latest_imu = latest_imu_;
 
-        double delta_t_imu = time_ref_to_float(latest_imu_latency_);
-        double delta_t_cmd = 0.1;
-        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd);
-        double delta_t_calc = fmod(delta_t_imu, delta_t_cmd);
+        double delta_t_imu = time_ref_to_float(latest_imu_latency_); // time between latest imu msgs
+        double delta_t_cmd = 0.1; // time between cmd_vel msgs (assumed constant at 10Hz)
+        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd); // number of cmd_vel msgs to use for correction (dependend on delta_t_imu) remember it marks the first command in the queue so the number would be +1
+        double delta_t_calc = fmod(delta_t_imu, delta_t_cmd); // initial delta_t for correction calculation
 
         double w = latest_imu->orientation.w;
         double x = latest_imu->orientation.x;
@@ -136,16 +138,38 @@ class Correction : public rclcpp::Node {
         double z = latest_imu->orientation.z;
 
         double psi = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-        
-        for (int i = cmds_used; i>=0; i--) {
-            if (cmd_vel_list_.peek_by_index(i)->twist.linear.x == 0.0) {
+
+        if (initial_psi == 999.9) { // if no correction has been made yet
+            if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x == 0.0) { // no movement set invalid
                 psi = 999.9;
-                break;
+            } else {
+                psi += psi + cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
+                for (int i = cmds_used - 1; i>=0; i--) {
+                    if (cmd_vel_list_.peek_by_index(i)->twist.linear.x == 0.0) {
+                        psi = 999.9;
+                        break;
+                    }
+                    psi += cmd_vel_list_.peek_by_index(i)->twist.angular.z * delta_t_cmd;
+                }
             }
-            double psi_vel_cmd = cmd_vel_list_.peek_by_index(i)->twist.angular.z;
-            psi += psi_vel_cmd * delta_t_calc;
-            delta_t_calc = delta_t_cmd;
+        } else {
+            if (cmd_vel_list_.peek_by_index(0)->twist.linear.x == 0.0) { // no movement set invalid
+                psi = 999.9;
+            } else {
+                psi += initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
+            }
         }
+
+        if (psi != 999.9) {
+            while (psi > M_PI) {
+                psi -= 2.0f * M_PI;
+            }
+            while (psi < -M_PI) {
+                psi += 2.0f * M_PI;
+            }
+        }
+
+        initial_psi = psi;
 
         output_msg.twist_1.angular.z = psi;
         pub_cmd_vel_imu_->publish(output_msg);
