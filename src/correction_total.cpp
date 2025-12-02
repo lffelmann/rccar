@@ -39,22 +39,22 @@ public:
 
 using std::placeholders::_1;
 
-class Correction : public rclcpp::Node {
+class Correction_Total : public rclcpp::Node {
   public:
-    Correction() : Node("correction") {
+    Correction_Total() : Node("correction_total") {
         auto qos_sensor = rclcpp::SensorDataQoS();
 
         sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu", qos_sensor, std::bind(&Correction::imu_callback, this, _1));
+            "/imu", qos_sensor, std::bind(&Correction_Total::imu_callback, this, _1));
 
         sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
-            "/odom", qos_sensor, std::bind(&Correction::odom_callback, this, _1));
+            "/odom", qos_sensor, std::bind(&Correction_Total::odom_callback, this, _1));
 
         sub_cmd_vel_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
-            "/cmd_vel", 1, std::bind(&Correction::cmd_vel_callback, this, _1));
+            "/cmd_vel", 1, std::bind(&Correction_Total::cmd_vel_callback, this, _1));
 
         sub_imu_latency_ = this->create_subscription<sensor_msgs::msg::TimeReference>(
-            "/imu_latency", qos_sensor, std::bind(&Correction::imu_latency_callback, this, _1));
+            "/imu_latency", qos_sensor, std::bind(&Correction_Total::imu_latency_callback, this, _1));
 
         pub_cmd_vel_imu_ = this->create_publisher<rccar_msgs::msg::TwistStampedTwistTimestampTimestamp>(
             "/cmd_vel_imu", 1);
@@ -179,7 +179,7 @@ class Correction : public rclcpp::Node {
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Correction>());
+    rclcpp::spin(std::make_shared<Correction_Total>());
     rclcpp::shutdown();
     return 0;
 }
