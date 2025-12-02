@@ -140,12 +140,12 @@ class Correction : public rclcpp::Node {
         double psi = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
 
         if (initial_psi == 999.9) { // if no correction has been made yet
-            if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x == 0.0) { // no movement set invalid
+            if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x <= 0.0) { // no movement set invalid
                 psi = 999.9;
             } else {
                 psi += psi + cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
                 for (int i = cmds_used - 1; i>=0; i--) {
-                    if (cmd_vel_list_.peek_by_index(i)->twist.linear.x == 0.0) {
+                    if (cmd_vel_list_.peek_by_index(i)->twist.linear.x <= 0.0) {
                         psi = 999.9;
                         break;
                     }
@@ -153,7 +153,7 @@ class Correction : public rclcpp::Node {
                 }
             }
         } else {
-            if (cmd_vel_list_.peek_by_index(0)->twist.linear.x == 0.0) { // no movement set invalid
+            if (cmd_vel_list_.peek_by_index(0)->twist.linear.x <= 0.0) { // no movement set invalid
                 psi = 999.9;
             } else {
                 psi += initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
