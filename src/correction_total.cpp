@@ -129,7 +129,7 @@ class Correction_Total : public rclcpp::Node {
 
         double delta_t_imu = time_ref_to_float(latest_imu_latency_); // time between latest imu msgs
         double delta_t_cmd = 0.1; // time between cmd_vel msgs (assumed constant at 10Hz)
-        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd); // number of cmd_vel msgs to use for correction (dependend on delta_t_imu) remember it marks the first command in the queue so the number would be +1
+        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd) + 1; // number of cmd_vel msgs to use for correction (dependend on delta_t_imu) remember it marks the first command in the queue so the number would be +1; +1 as we want to predict when the cmd has finished
         double delta_t_calc = fmod(delta_t_imu, delta_t_cmd); // initial delta_t for correction calculation
 
         double w = latest_imu->orientation.w;
