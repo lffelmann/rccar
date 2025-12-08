@@ -127,7 +127,7 @@ class Correction : public rclcpp::Node {
 
         double delta_t_imu = time_ref_to_float(latest_imu_latency_);
         double delta_t_cmd = 0.1;
-        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd);
+        int cmds_used = static_cast<int>(delta_t_imu / delta_t_cmd) + 1; // we want to predict where it is when the command is finished
         double delta_t_calc = fmod(delta_t_imu, delta_t_cmd);
 
         double w = latest_imu->orientation.w;
