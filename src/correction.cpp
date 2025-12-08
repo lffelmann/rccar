@@ -147,6 +147,15 @@ class Correction : public rclcpp::Node {
             delta_t_calc = delta_t_cmd;
         }
 
+        if (psi != 999.9) {
+            while (psi > M_PI) {
+                psi -= 2.0f * M_PI;
+            }
+            while (psi < -M_PI) {
+                psi += 2.0f * M_PI;
+            }
+        }
+
         output_msg.twist_1.angular.z = psi;
         pub_cmd_vel_imu_->publish(output_msg);
         RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_imu");
