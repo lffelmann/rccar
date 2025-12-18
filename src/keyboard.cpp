@@ -4,7 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 using namespace std::chrono_literals;
@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 class KeyboardCmdVel : public rclcpp::Node {
   public:
     KeyboardCmdVel() : Node("keyboard_cmd_vel") {
-        pub_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+        pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("cmd_vel", 10);
 
         timer_ = this->create_wall_timer(100ms, // 10 Hz
                                          std::bind(&KeyboardCmdVel::timerCallback, this));
@@ -29,10 +29,10 @@ class KeyboardCmdVel : public rclcpp::Node {
     ~KeyboardCmdVel() { restoreTerminal(); }
 
   private:
-    geometry_msgs::msg::Twist twist_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
+    geometry_msgs::msg::TwistStamped twist_;
+    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr pub_;
     rclcpp::TimerBase::SharedPtr timer_;
-    geometry_msgs::msg::Twist t_;
+    geometry_msgs::msg::TwistStamped t_;
 
     termios orig_termios_;
 
@@ -42,41 +42,47 @@ class KeyboardCmdVel : public rclcpp::Node {
             processKey(c);
         }
 
+        twist_ = t_; 
+        
+        if (twist_.twist.linear.x < 0.0f) {
+            twist_.twist.angular.z = -twist_.twist.angular.z;
+        }
+        
+        twist_.header.stamp = this->get_clock()->now();
+        twist_.header.frame_id = "base_link";
+
         pub_->publish(twist_);
+
+        print_status();
     }
 
     float round_one_decimal(float value) { return std::round(value * 10.0f) / 10.0f; }
 
-    void print_status() { std::cout << "\rLinear.x: " << twist_.linear.x << "   Angular.z: " << twist_.angular.z << "     " << std::flush; }
+    void print_status() { std::cout << "\rLinear.x: " << twist_.twist.linear.x << "   Angular.z: " << twist_.twist.angular.z << "     " << std::flush; }
 
     void processKey(char c) {
-        geometry_msgs::msg::Twist old = t_;
+        geometry_msgs::msg::TwistStamped old = t_;
 
         switch (c) {
         case 'w':
-            t_.linear.x = round_one_decimal(std::min(t_.linear.x + 0.1, 2.0));
+            t_.twist.linear.x = round_one_decimal(std::min(t_.twist.linear.x + 0.1, 2.0));
             break;
         case 's':
-            t_.linear.x = round_one_decimal(std::max(t_.linear.x - 0.1, -2.0));
+            t_.twist.linear.x = round_one_decimal(std::max(t_.twist.linear.x - 0.1, -2.0));
             break;
         case 'a':
-            t_.angular.z = round_one_decimal(std::min(t_.angular.z + 2, 2.0));
+            t_.twist.angular.z = round_one_decimal(std::min(t_.twist.angular.z + 2, 2.0));
             break;
         case 'd':
-            t_.angular.z = round_one_decimal(std::max(t_.angular.z - 2, -2.0));
+            t_.twist.angular.z = round_one_decimal(std::max(t_.twist.angular.z - 2, -2.0));
             break;
         case ' ':
-            t_ = geometry_msgs::msg::Twist();
+            t_ = geometry_msgs::msg::TwistStamped();
             break;
         case 'q':
             std::cout << "Quit.\n";
             rclcpp::shutdown();
             break;
-        }
-        twist_ = t_;
-
-        if (old.linear.x != t_.linear.x || old.angular.z != t_.angular.z) {
-            print_status();
         }
     }
 
