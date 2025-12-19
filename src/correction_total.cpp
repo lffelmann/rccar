@@ -82,7 +82,7 @@ class Correction_Total : public rclcpp::Node {
         return msg->time_ref.sec + msg->time_ref.nanosec * 1e-9;
     }
 
-    double initial_psi = 999.9;
+    double initial_psi = 999.0;
 
     void cmd_vel_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
         auto output_msg = rccar_msgs::msg::Rccar1Corr2Time();
@@ -116,7 +116,7 @@ class Correction_Total : public rclcpp::Node {
         }
 
         if (!latest_imu_latency_ || !latest_imu_ || !cmd_vel_list_.is_full()) {
-            output_msg.yaw_direction = 999.9;
+            output_msg.yaw_direction = 999.0;
             cmd_vel_list_.push_front(msg);
             pub_cmd_vel_corr_->publish(output_msg);
             RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_corr without correction");
@@ -139,14 +139,14 @@ class Correction_Total : public rclcpp::Node {
 
         double psi = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
 
-        if (initial_psi == 999.9) { // if no correction has been made yet
+        if (initial_psi == 999.0) { // if no correction has been made yet
             if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x <= 0.0) { // no movement set invalid
-                psi = 999.9;
+                psi = 999.0;
             } else {
                 psi += psi + cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
                 for (int i = cmds_used - 1; i>=0; i--) {
                     if (cmd_vel_list_.peek_by_index(i)->twist.linear.x <= 0.0) {
-                        psi = 999.9;
+                        psi = 999.0;
                         break;
                     }
                     psi += cmd_vel_list_.peek_by_index(i)->twist.angular.z * delta_t_cmd;
@@ -154,13 +154,13 @@ class Correction_Total : public rclcpp::Node {
             }
         } else {
             if (cmd_vel_list_.peek_by_index(0)->twist.linear.x <= 0.0) { // no movement set invalid
-                psi = 999.9;
+                psi = 999.0;
             } else {
                 psi += initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
             }
         }
 
-        if (psi != 999.9) {
+        if (psi != 999.0) {
             while (psi > M_PI) {
                 psi -= 2.0f * M_PI;
             }

@@ -114,7 +114,7 @@ class Correction : public rclcpp::Node {
         }
 
         if (!latest_imu_latency_ || !latest_imu_ || !cmd_vel_list_.is_full()) {
-            output_msg.yaw_direction = 999.9;
+            output_msg.yaw_direction = 999.0;
             cmd_vel_list_.push_front(msg);
             pub_cmd_vel_corr_->publish(output_msg);
             RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_corr without correction");
@@ -139,7 +139,7 @@ class Correction : public rclcpp::Node {
         
         for (int i = cmds_used; i>=0; i--) {
             if (cmd_vel_list_.peek_by_index(i)->twist.linear.x == 0.0) {
-                psi = 999.9;
+                psi = 999.0;
                 break;
             }
             double psi_vel_cmd = cmd_vel_list_.peek_by_index(i)->twist.angular.z;
@@ -147,7 +147,7 @@ class Correction : public rclcpp::Node {
             delta_t_calc = delta_t_cmd;
         }
 
-        if (psi != 999.9) {
+        if (psi != 999.0) {
             while (psi > M_PI) {
                 psi -= 2.0f * M_PI;
             }
