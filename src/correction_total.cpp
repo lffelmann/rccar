@@ -1,5 +1,5 @@
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "rccar_msgs/msg/rccar1_corr2_time.hpp"
+#include "rccar_msgs/msg/rccar_corr1_time2.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -56,7 +56,7 @@ class Correction_Total : public rclcpp::Node {
         sub_imu_latency_ = this->create_subscription<sensor_msgs::msg::TimeReference>(
             "/imu_latency", qos_sensor, std::bind(&Correction_Total::imu_latency_callback, this, _1));
 
-        pub_cmd_vel_corr_ = this->create_publisher<rccar_msgs::msg::Rccar1Corr2Time>(
+        pub_cmd_vel_corr_ = this->create_publisher<rccar_msgs::msg::RccarCorr1Time2>(
             "/cmd_vel_corr", 1);
 
         RCLCPP_INFO(this->get_logger(), "Correction node has been started.");
@@ -67,7 +67,7 @@ class Correction_Total : public rclcpp::Node {
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
     rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr sub_cmd_vel_;
     rclcpp::Subscription<sensor_msgs::msg::TimeReference>::SharedPtr sub_imu_latency_;
-    rclcpp::Publisher<rccar_msgs::msg::Rccar1Corr2Time>::SharedPtr pub_cmd_vel_corr_;
+    rclcpp::Publisher<rccar_msgs::msg::RccarCorr1Time2>::SharedPtr pub_cmd_vel_corr_;
 
     sensor_msgs::msg::Imu::SharedPtr latest_imu_;
     nav_msgs::msg::Odometry::SharedPtr latest_odom_;
@@ -85,7 +85,7 @@ class Correction_Total : public rclcpp::Node {
     double initial_psi = 999.0;
 
     void cmd_vel_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
-        auto output_msg = rccar_msgs::msg::Rccar1Corr2Time();
+        auto output_msg = rccar_msgs::msg::RccarCorr1Time2();
         output_msg.header = msg->header;
         output_msg.twist = msg->twist;
 
