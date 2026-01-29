@@ -79,6 +79,36 @@ class KeyboardCmdVel : public rclcpp::Node {
         case ' ':
             t_ = geometry_msgs::msg::TwistStamped();
             break;
+        case '1':
+            t_.twist.linear.x = 0.1;
+            break;
+        case '2':
+            t_.twist.linear.x = 0.2;
+            break;
+        case '3':
+            t_.twist.linear.x = 0.3;
+            break;
+        case '4':
+            t_.twist.linear.x = 0.4;
+            break;
+        case '5':
+            t_.twist.linear.x = 0.5;
+            break;
+        case '6':
+            t_.twist.linear.x = 0.6;
+            break;
+        case '7':
+            t_.twist.linear.x = 0.7;
+            break;
+        case '8':
+            t_.twist.linear.x = 0.8;
+            break;
+        case '9':
+            t_.twist.linear.x = 0.9;
+            break;
+        case '0':
+            t_.twist.linear.x = 1.0;
+            break;
         case 'q':
             std::cout << "Quit.\n";
             rclcpp::shutdown();
