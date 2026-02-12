@@ -21,7 +21,7 @@ class Bypass : public rclcpp::Node {
             "/cmd_vel", 1, std::bind(&Bypass::cmd_vel_callback, this, _1));
 
         pub_cmd_vel_imu_ = this->create_publisher<rccar_msgs::msg::RccarCorr1Time2>(
-            "/cmd_vel_imu", 1);
+            "/cmd_vel_corr", 1);
 
         RCLCPP_INFO(this->get_logger(), "Bypass node has been started.");
     }
@@ -59,7 +59,7 @@ class Bypass : public rclcpp::Node {
         }
 
         pub_cmd_vel_imu_->publish(output_msg);
-        RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_imu");
+        RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_corr");
     }
 };
 
