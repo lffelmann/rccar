@@ -190,7 +190,7 @@ class Correction_Total : public rclcpp::Node {
 
         output_msg.yaw_direction = psi;
         pub_cmd_vel_corr_->publish(output_msg);
-        RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_corr");
+        RCLCPP_INFO(this->get_logger(), "Published to /cmd_vel_corr. Psi: %f", psi);
     }
 };
 
