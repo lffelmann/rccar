@@ -87,6 +87,7 @@ class Correction_Total : public rclcpp::Node {
     }
 
     double initial_psi = 999.0;
+    bool valid_psi = false;
 
     void cmd_vel_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
         auto output_msg = rccar_msgs::msg::RccarCorr1Time2();
@@ -143,25 +144,32 @@ class Correction_Total : public rclcpp::Node {
 
         double psi = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
 
-        if (initial_psi == 999.0) { // if no correction has been made yet
+        if (valid_psi == false) { // if no correction has been made yet
             if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x <= 0.0) { // no movement set invalid
                 psi = 999.0;
+                valid_psi = false;
             } else {
                 psi += cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
                 for (int i = cmds_used - 1; i>=0; i--) {
                     if (cmd_vel_list_.peek_by_index(i)->twist.linear.x <= 0.0) {
                         psi = 999.0;
+                        valid_psi = false;
                         break;
                     }
                     psi += cmd_vel_list_.peek_by_index(i)->twist.angular.z * delta_t_cmd;
+                }
+                if (psi != 999.0) {
+                    valid_psi = true;
                 }
             }
         } else {
             if (cmd_vel_list_.peek_by_index(0)->twist.linear.x <= 0.0) { // no movement set invalid and clear list
                 psi = 999.0;
+                valid_psi = false;
                 cmd_vel_list_.clear();
             } else {
                 psi = initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
+                valid_psi = true;
             }
         }
 
@@ -172,6 +180,10 @@ class Correction_Total : public rclcpp::Node {
             while (psi < -M_PI) {
                 psi += 2.0f * M_PI;
             }
+        }
+
+        if (valid_psi == false) {
+            psi = 999.0;
         }
 
         initial_psi = psi;
