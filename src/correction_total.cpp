@@ -35,6 +35,10 @@ public:
     size_t size() const {
         return dq.size();
     }
+
+    void clear() {
+        dq.clear();
+    }
 };
 
 using std::placeholders::_1;
@@ -143,7 +147,7 @@ class Correction_Total : public rclcpp::Node {
             if (cmd_vel_list_.peek_by_index(cmds_used)->twist.linear.x <= 0.0) { // no movement set invalid
                 psi = 999.0;
             } else {
-                psi += psi + cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
+                psi += cmd_vel_list_.peek_by_index(cmds_used)->twist.angular.z * delta_t_calc; // inital correction for delta_t_calc
                 for (int i = cmds_used - 1; i>=0; i--) {
                     if (cmd_vel_list_.peek_by_index(i)->twist.linear.x <= 0.0) {
                         psi = 999.0;
@@ -153,10 +157,11 @@ class Correction_Total : public rclcpp::Node {
                 }
             }
         } else {
-            if (cmd_vel_list_.peek_by_index(0)->twist.linear.x <= 0.0) { // no movement set invalid
+            if (cmd_vel_list_.peek_by_index(0)->twist.linear.x <= 0.0) { // no movement set invalid and clear list
                 psi = 999.0;
+                cmd_vel_list_.clear();
             } else {
-                psi += initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
+                psi = initial_psi + cmd_vel_list_.peek_by_index(0)->twist.angular.z * delta_t_cmd;
             }
         }
 
